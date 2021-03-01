@@ -3,6 +3,7 @@ import {useParams} from "react-router-dom";
 import {gql} from "apollo-boost";
 import {useQuery} from "@apollo/react-hooks";
 import styled from "styled-components";
+import Movie from "../components/Movie";
 
 const GET_MOVIE = gql`
     query getMovie($id: Int!) {
@@ -12,6 +13,11 @@ const GET_MOVIE = gql`
             language
             rating
             description_full
+        }
+        suggestions(id: $id) {
+            id
+            title
+            medium_cover_image
         }
     }
 `;
@@ -28,6 +34,10 @@ const Container = styled.div`
 
 const Column = styled.div`
   margin-left: 10px;
+  width: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 `;
 
 const Title = styled.h1`
@@ -47,7 +57,7 @@ const Description = styled.p`
 
 const Poster = styled.div`
   width: 25%;
-  height: 60%;
+  height: 300px;
   background-color: transparent;
   background-image: url(${props => props.bg});
   background-size: cover;
@@ -62,15 +72,18 @@ export default () => {
     return (
         <Container>
             <Column>
+                <Poster bg={data?.movie?.medium_cover_image}></Poster>
                 <Title>{loading ? "Loading..." : data.movie.title}</Title>
-                {!loading && data.movie && (
+                {!loading && (
                     <>
-                        <Subtitle>{data.movie.language} · 4.5</Subtitle>
-                        <Description>{data.movie.description_full}</Description>
+                        <Subtitle>{data?.movie?.language} · {data?.movie?.rating}</Subtitle>
+                        <Description>{data?.movie?.description_full}</Description>
                     </>
                 )}
             </Column>
-            <Poster bg={data && data.movie ? data.movie.medium_cover_image : ""}></Poster>
+            <Column>
+            {data?.suggestions?.map(s => <Movie key={s.id} id={s.id} bg={s.medium_cover_image}/>)}
+            </Column>
         </Container>
     );
 }
